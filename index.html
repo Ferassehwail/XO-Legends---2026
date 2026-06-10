@@ -5,65 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحدي X & O السيبراني</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#f8fafc" id="themeMeta">
     <style>
         :root {
-            --bg-dark: #0f172a;
+            /* الألوان الافتراضية - الوضع الفاتح الهادئ */
+            --bg-gradient: radial-gradient(circle at center, #f0f4f8 0%, #e2e8f0 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(15, 23, 42, 0.08);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --cell-bg: rgba(255, 255, 255, 0.9);
+            --cell-border: #cbd5e1;
+            
+            /* ألوان النيون الثابتة للتفاعل */
+            --neon-blue: #0284c7;
+            --neon-pink: #db2777;
+            --neon-green: #16a34a;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* قيم الوضع الليلي عند التفعيل */
+        [data-theme="dark"] {
+            --bg-gradient: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
             --card-bg: rgba(30, 41, 59, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --input-border: #334155;
+            --cell-bg: rgba(15, 23, 42, 0.6);
+            --cell-border: #334155;
             --neon-blue: #38bdf8;
             --neon-pink: #f43f5e;
-            --text-light: #f8fafc;
-            --neon-green: #22c55e;
+            --shadow-color: rgba(0, 0, 0, 0.5);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: radial-gradient(circle at center, #1e1b4b 0%, var(--bg-dark) 100%); color: var(--text-light); min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; padding: 20px; }
-        .container { width: 100%; max-width: 420px; position: relative; }
-        .card { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; padding: 35px 25px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: none; text-align: center; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body { 
+            background: var(--bg-gradient); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            overflow-x: hidden; 
+            padding: 20px; 
+        }
+
+        .container { width: 100%; max-width: 420px; position: relative; z-index: 2; }
+        
+        /* كرت الواجهة الرئيسي */
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid var(--card-border); 
+            border-radius: 28px; 
+            padding: 35px 25px; 
+            box-shadow: 0 25px 50px -12px var(--shadow-color); 
+            display: none; 
+            text-align: center; 
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        
         .card.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .glow-text { font-size: 2.8rem; font-weight: 900; margin-bottom: 8px; color: #ffffff; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6); }
-        .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 35px; }
-        .input-group input { width: 100%; padding: 16px; margin-bottom: 16px; border-radius: 14px; border: 2px solid #334155; background: rgba(15, 23, 42, 0.6); color: white; font-size: 1.05rem; text-align: center; outline: none; transition: 0.3s; }
-        .input-group input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .glow-text { font-size: 2.6rem; font-weight: 900; margin-bottom: 8px; color: var(--text-main); }
+        .subtitle { color: var(--text-muted); font-size: 1rem; margin-bottom: 35px; font-weight: 500; }
+        
+        /* مدخلات الأسماء والتحقق */
+        .input-group input { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 16px; 
+            border-radius: 14px; 
+            border: 2px solid var(--input-border); 
+            background: var(--input-bg); 
+            color: var(--text-main); 
+            font-size: 1.05rem; 
+            text-align: center; 
+            outline: none; 
+        }
+        .input-group input:focus { border-color: var(--neon-blue); }
+        .input-group input.error { border-color: var(--neon-pink); background: rgba(244, 63, 94, 0.05); }
+        
+        /* الأزرار الهندسية */
         .btn-primary, .btn-secondary, .btn-danger { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.25s; margin-top: 12px; }
-        .btn-primary { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6); }
-        .btn-secondary { background: #334155; color: #f1f5f9; }
-        .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--neon-pink); border: 1px solid rgba(244, 63, 94, 0.3); }
+        .btn-primary { background: linear-gradient(135deg, #0284c7, #3b82f6); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+        .btn-secondary { background: var(--input-border); color: var(--text-main); }
+        .btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--neon-pink); border: 1px solid rgba(244, 63, 94, 0.2); }
         
-        /* زر التثبيت النيون */
-        .install-container { display: flex; justify-content: center; margin-bottom: 15px; }
-        .btn-install { display: none; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); animation: pulse 2s infinite; transition: 0.3s; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); } 100% { transform: scale(1); } }
+        /* شريط التحكم العلوي بالأزرار العائمة */
+        .top-controls { display: flex; justify-content: space-between; width: 100%; max-width: 420px; margin-bottom: 15px; gap: 10px; }
+        .btn-install { display: none; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+        .theme-toggle { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 10px 16px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 12px var(--shadow-color); margin-right: auto; }
         
-        .status-wrapper { margin-bottom: 25px; background: rgba(15, 23, 42, 0.4); padding: 15px; border-radius: 18px; }
+        /* واجهة لوحة اللعب والنتائج */
+        .status-wrapper { margin-bottom: 25px; background: rgba(0,0,0,0.03); padding: 15px; border-radius: 18px; border: 1px solid var(--card-border); }
+        [data-theme="dark"] .status-wrapper { background: rgba(15, 23, 42, 0.4); }
         .turn-indicator { font-size: 1.25rem; margin-bottom: 15px; font-weight: 700; }
         .score-board { display: flex; justify-content: space-between; gap: 12px; }
-        .score-box { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; background: rgba(15, 23, 42, 0.6); }
-        .score-label { font-size: 0.8rem; color: #94a3b8; }
-        .x-score { color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
-        .o-score { color: var(--neon-pink); border: 1px solid rgba(244, 63, 94, 0.3); }
+        .score-box { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; background: var(--cell-bg); border: 1px solid var(--cell-border); }
+        .score-label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .x-score { color: var(--neon-blue); }
+        .o-score { color: var(--neon-pink); }
+        
+        /* شبكة المربعات */
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 25px; }
-        .cell { aspect-ratio: 1; background: rgba(15, 23, 42, 0.6); border: 2px solid #334155; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: 900; cursor: pointer; transition: 0.2s; user-select: none; }
-        .cell:hover:not(.X):not(.O) { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-        .cell.X { color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); border-color: var(--neon-blue); animation: popIn 0.3s forwards; }
-        .cell.O { color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink); border-color: var(--neon-pink); animation: popIn 0.3s forwards; }
-        @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .cell.winner-cell { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; text-shadow: none !important; box-shadow: 0 0 25px var(--neon-green); transform: scale(1.03); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 200; opacity: 0; transition: opacity 0.3s ease; }
+        .cell { aspect-ratio: 1; background: var(--cell-bg); border: 2px solid var(--cell-border); border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: 900; cursor: pointer; user-select: none; }
+        .cell:hover:not(.X):not(.O) { border-color: var(--neon-blue); }
+        .cell.X { color: var(--neon-blue); animation: popIn 0.3s forwards; }
+        .cell.O { color: var(--neon-pink); animation: popIn 0.3s forwards; }
+        @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .cell.winner-cell { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; border-color: #4ade80 !important; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.02); }
+        
+        /* المنبثقة للنتائج */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 200; opacity: 0; transition: opacity 0.3s ease; }
         .modal.active { display: flex; opacity: 1; }
-        .modal-content { background: #1e293b; padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 360px; width: 100%; transform: scale(0.85); transition: 0.3s; }
-        .modal.active .modal-content { transform: scale(1); }
-        .glow-text-green { font-size: 2.2rem; color: #4ade80; text-shadow: 0 0 15px rgba(34, 197, 94, 0.6); margin-bottom: 25px; font-weight: 800; }
+        .modal-content { background: var(--input-bg); padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 360px; width: 100%; border: 1px solid var(--card-border); box-shadow: 0 20px 40px var(--shadow-color); }
+        .glow-text-green { font-size: 2.2rem; color: #16a34a; margin-bottom: 25px; font-weight: 800; }
+        [data-theme="dark"] .glow-text-green { color: #4ade80; text-shadow: 0 0 15px rgba(34, 197, 94, 0.6); }
+
+        /* ستايل المربع الفخم الخاص بالمهندس فراس */
+        .engineer-footer {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 25px;
+            padding: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px var(--shadow-color);
+            z-index: 2;
+        }
+        .engineer-footer p {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+        .engineer-footer span {
+            color: var(--neon-blue);
+            font-weight: 900;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="install-container">
-            <button id="btnInstall" class="btn-install">تثبيت اللعبة كتطبيق 📥</button>
-        </div>
+    <div class="top-controls">
+        <button id="btnInstall" class="btn-install">تثبيت التطبيق 📥</button>
+        <button id="themeToggle" class="theme-toggle">الوضع الليلي 🌙</button>
+    </div>
 
+    <div class="container">
         <div id="startScreen" class="card active">
             <h1 class="glow-text">تحدي X & O</h1>
             <p class="subtitle">نسخة تطبيق الـ PWA الذكي</p>
@@ -107,6 +215,10 @@
         </div>
     </div>
 
+    <div class="engineer-footer">
+        <p>تصميم وتنفيذ: <span>م. فراس محمد سحويل</span></p>
+    </div>
+
     <script>
         const startScreen = document.getElementById('startScreen');
         const gameScreen = document.getElementById('gameScreen');
@@ -116,19 +228,38 @@
         const resultMessage = document.getElementById('resultMessage');
         const labelX = document.getElementById('labelX');
         const labelO = document.getElementById('labelO');
+        const p1Input = document.getElementById('player1');
+        const p2Input = document.getElementById('player2');
 
         let nameX = "اللاعب 1", nameO = "اللاعب 2", currentPlayer = 'X', gameActive = true;
         let gameState = ["", "", "", "", "", "", "", "", ""], scoreX = 0, scoreO = 0;
         const winningConditions = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
+        // ميكانيكية التحقق من إدخال الأسماء قبل بدء اللعب
         document.getElementById('startBtn').addEventListener('click', () => {
-            const p1 = document.getElementById('player1').value.trim();
-            const p2 = document.getElementById('player2').value.trim();
-            nameX = p1 || "اللاعب 1"; nameO = p2 || "اللاعب 2";
-            labelX.textContent = nameX; labelO.textContent = nameO;
-            startScreen.classList.remove('active'); gameScreen.classList.add('active');
+            let hasError = false;
+
+            if (p1Input.value.trim() === "") { p1Input.classList.add('error'); hasError = true; } 
+            else { p1Input.classList.remove('error'); }
+
+            if (p2Input.value.trim() === "") { p2Input.classList.add('error'); hasError = true; } 
+            else { p2Input.classList.remove('error'); }
+
+            if (hasError) return; // منع الانتقال إذا كانت الحقول فارغة
+
+            nameX = p1Input.value.trim();
+            nameO = p2Input.value.trim();
+            labelX.textContent = nameX;
+            labelO.textContent = nameO;
+            
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
             resetGame();
         });
+
+        // إزالة حالة الخطأ عند الكتابة
+        p1Input.addEventListener('input', () => p1Input.classList.remove('error'));
+        p2Input.addEventListener('input', () => p2Input.classList.remove('error'));
 
         function updateStatus() {
             currentPlayerNameDisplay.textContent = currentPlayer === 'X' ? nameX : nameO;
@@ -174,7 +305,33 @@
             scoreX = 0; scoreO = 0; document.getElementById('scoreX').textContent = 0; document.getElementById('scoreO').textContent = 0;
         });
 
-        // ميكانيكية زر التثبيت الذكي
+        // ميكانيكية التحويل الذكي بين الوضع الفاتح والليلي
+        const themeToggle = document.getElementById('themeToggle');
+        const themeMeta = document.getElementById('themeMeta');
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                themeToggle.textContent = "الوضع الليلي 🌙";
+                themeMeta.setAttribute('content', '#f8fafc');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = "الوضع الفاتح ☀️";
+                themeMeta.setAttribute('content', '#0f172a');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // استعادة الوضع المفضل المحفوظ للمستخدم
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = "الوضع الفاتح ☀️";
+            themeMeta.setAttribute('content', '#0f172a');
+        }
+
+        // ميكانيكية زر التثبيت الذكي الـ PWA
         let deferredPrompt;
         const installBtn = document.getElementById('btnInstall');
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -191,7 +348,6 @@
         });
         window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
 
-        // تسجيل الـ Service Worker للأوفلاين
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
             .then(() => console.log("SW Registered Successfully"))
