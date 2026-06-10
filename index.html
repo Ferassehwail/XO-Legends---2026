@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي X & O السيبراني</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --neon-blue: #38bdf8;
+            --neon-pink: #f43f5e;
+            --text-light: #f8fafc;
+            --neon-green: #22c55e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: radial-gradient(circle at center, #1e1b4b 0%, var(--bg-dark) 100%); color: var(--text-light); min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; padding: 20px; }
+        .container { width: 100%; max-width: 420px; position: relative; }
+        .card { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; padding: 35px 25px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: none; text-align: center; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .card.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .glow-text { font-size: 2.8rem; font-weight: 900; margin-bottom: 8px; color: #ffffff; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6); }
+        .subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 35px; }
+        .input-group input { width: 100%; padding: 16px; margin-bottom: 16px; border-radius: 14px; border: 2px solid #334155; background: rgba(15, 23, 42, 0.6); color: white; font-size: 1.05rem; text-align: center; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+        .btn-primary, .btn-secondary, .btn-danger { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.25s; margin-top: 12px; }
+        .btn-primary { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6); }
+        .btn-secondary { background: #334155; color: #f1f5f9; }
+        .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--neon-pink); border: 1px solid rgba(244, 63, 94, 0.3); }
+        
+        /* زر التثبيت النيون */
+        .install-container { display: flex; justify-content: center; margin-bottom: 15px; }
+        .btn-install { display: none; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); animation: pulse 2s infinite; transition: 0.3s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); } 100% { transform: scale(1); } }
+        
+        .status-wrapper { margin-bottom: 25px; background: rgba(15, 23, 42, 0.4); padding: 15px; border-radius: 18px; }
+        .turn-indicator { font-size: 1.25rem; margin-bottom: 15px; font-weight: 700; }
+        .score-board { display: flex; justify-content: space-between; gap: 12px; }
+        .score-box { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; background: rgba(15, 23, 42, 0.6); }
+        .score-label { font-size: 0.8rem; color: #94a3b8; }
+        .x-score { color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .o-score { color: var(--neon-pink); border: 1px solid rgba(244, 63, 94, 0.3); }
+        .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 25px; }
+        .cell { aspect-ratio: 1; background: rgba(15, 23, 42, 0.6); border: 2px solid #334155; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: 900; cursor: pointer; transition: 0.2s; user-select: none; }
+        .cell:hover:not(.X):not(.O) { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        .cell.X { color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); border-color: var(--neon-blue); animation: popIn 0.3s forwards; }
+        .cell.O { color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink); border-color: var(--neon-pink); animation: popIn 0.3s forwards; }
+        @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .cell.winner-cell { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; text-shadow: none !important; box-shadow: 0 0 25px var(--neon-green); transform: scale(1.03); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 200; opacity: 0; transition: opacity 0.3s ease; }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content { background: #1e293b; padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 360px; width: 100%; transform: scale(0.85); transition: 0.3s; }
+        .modal.active .modal-content { transform: scale(1); }
+        .glow-text-green { font-size: 2.2rem; color: #4ade80; text-shadow: 0 0 15px rgba(34, 197, 94, 0.6); margin-bottom: 25px; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="install-container">
+            <button id="btnInstall" class="btn-install">تثبيت اللعبة كتطبيق 📥</button>
+        </div>
+
+        <div id="startScreen" class="card active">
+            <h1 class="glow-text">تحدي X & O</h1>
+            <p class="subtitle">نسخة تطبيق الـ PWA الذكي</p>
+            <div class="input-group">
+                <input type="text" id="player1" placeholder="اسم اللاعب الأول (X)" autocomplete="off">
+                <input type="text" id="player2" placeholder="اسم اللاعب الثاني (O)" autocomplete="off">
+            </div>
+            <button id="startBtn" class="btn-primary">ابدأ اللعب الآن 🎮</button>
+        </div>
+
+        <div id="gameScreen" class="card">
+            <div class="status-wrapper">
+                <div class="turn-indicator" id="turnStatus">دور: <span id="currentPlayerName">--</span></div>
+                <div class="score-board">
+                    <div class="score-box x-score">
+                        <span id="labelX" class="score-label">اللاعب 1</span>
+                        <div>X : <span id="scoreX">0</span></div>
+                    </div>
+                    <div class="score-box o-score">
+                        <span id="labelO" class="score-label">اللاعب 2</span>
+                        <div>O : <span id="scoreO">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div><div class="cell" data-index="4"></div><div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
+            </div>
+
+            <button id="resetBtn" class="btn-secondary">إعادة الجولة 🔄</button>
+            <button id="backBtn" class="btn-danger">القائمة الرئيسية 🏠</button>
+        </div>
+
+        <div id="resultModal" class="modal">
+            <div class="modal-content">
+                <h2 id="resultMessage" class="glow-text-green">فائز!</h2>
+                <button id="modalResetBtn" class="btn-primary">جولة جديدة ⚡</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const cells = document.querySelectorAll('.cell');
+        const currentPlayerNameDisplay = document.getElementById('currentPlayerName');
+        const resultModal = document.getElementById('resultModal');
+        const resultMessage = document.getElementById('resultMessage');
+        const labelX = document.getElementById('labelX');
+        const labelO = document.getElementById('labelO');
+
+        let nameX = "اللاعب 1", nameO = "اللاعب 2", currentPlayer = 'X', gameActive = true;
+        let gameState = ["", "", "", "", "", "", "", "", ""], scoreX = 0, scoreO = 0;
+        const winningConditions = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const p1 = document.getElementById('player1').value.trim();
+            const p2 = document.getElementById('player2').value.trim();
+            nameX = p1 || "اللاعب 1"; nameO = p2 || "اللاعب 2";
+            labelX.textContent = nameX; labelO.textContent = nameO;
+            startScreen.classList.remove('active'); gameScreen.classList.add('active');
+            resetGame();
+        });
+
+        function updateStatus() {
+            currentPlayerNameDisplay.textContent = currentPlayer === 'X' ? nameX : nameO;
+            currentPlayerNameDisplay.style.color = currentPlayer === 'X' ? 'var(--neon-blue)' : 'var(--neon-pink)';
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'));
+            if (gameState[idx] !== "" || !gameActive) return;
+            gameState[idx] = currentPlayer;
+            e.target.textContent = currentPlayer;
+            e.target.classList.add(currentPlayer);
+            checkResult();
+        }));
+
+        function checkResult() {
+            let roundWon = false, line = [];
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a,b,c] = winningConditions[i];
+                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) { roundWon = true; line = [a,b,c]; break; }
+            }
+            if (roundWon) {
+                line.forEach(i => cells[i].classList.add('winner-cell'));
+                if(currentPlayer === 'X') { scoreX++; document.getElementById('scoreX').textContent = scoreX; }
+                else { scoreO++; document.getElementById('scoreO').textContent = scoreO; }
+                showResult(`كفو! الفائز هو:<br>${currentPlayer === 'X' ? nameX : nameO} 🎉`);
+                gameActive = false; return;
+            }
+            if (!gameState.includes("")) { showResult("النتيجة تعادل! 🤝"); gameActive = false; return; }
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateStatus();
+        }
+
+        function showResult(msg) { resultMessage.innerHTML = msg; resultModal.classList.add('active'); }
+        function resetGame() {
+            currentPlayer = 'X'; gameActive = true; gameState = ["", "", "", "", "", "", "", "", ""]; updateStatus();
+            cells.forEach(c => { c.textContent = ""; c.className = "cell"; }); resultModal.classList.remove('active');
+        }
+
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+        document.getElementById('modalResetBtn').addEventListener('click', resetGame);
+        document.getElementById('backBtn').addEventListener('click', () => {
+            gameScreen.classList.remove('active'); startScreen.classList.add('active');
+            scoreX = 0; scoreO = 0; document.getElementById('scoreX').textContent = 0; document.getElementById('scoreO').textContent = 0;
+        });
+
+        // ميكانيكية زر التثبيت الذكي
+        let deferredPrompt;
+        const installBtn = document.getElementById('btnInstall');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installBtn.style.display = 'none';
+                deferredPrompt = null;
+            }
+        });
+        window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
+
+        // تسجيل الـ Service Worker للأوفلاين
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("SW Registered Successfully"))
+            .catch(err => console.log("SW Registration Failed", err));
+        }
+    </script>
+</body>
+</html>
